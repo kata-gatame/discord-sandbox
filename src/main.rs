@@ -17,7 +17,6 @@ use serenity::{
     prelude::*,
 };
 
-use tracing::{error, info};
 use tracing_subscriber::{
     FmtSubscriber,
     EnvFilter,
@@ -39,11 +38,11 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        info!("Connected as {}", ready.user.name);
+        println!("Connected as {}", ready.user.name);
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
-        info!("Resumed");
+        println!("Resumed");
     }
 }
 
@@ -101,6 +100,6 @@ async fn main() {
     });
 
     if let Err(why) = client.start().await {
-        error!("Client error: {:?}", why);
+        println!("Client error: {:?}", why);
     }
 }
