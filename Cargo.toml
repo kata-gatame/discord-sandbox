@@ -1,5 +1,5 @@
 [package]
-    name = "discord_game"
+    name = "discord-sandbox"
     version = "0.1.0"
     authors = ["kata-gatame <nathan@kata.codes>"]
     edition = "2018"
