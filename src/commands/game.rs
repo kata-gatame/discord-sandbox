@@ -1,42 +1,32 @@
-use serenity::prelude::*;
+use rand::Rng;
+use std::{time::Duration};
+use serenity::{prelude::*};
 use serenity::model::prelude::*;
 use serenity::framework::standard::{
     CommandResult,
     macros::command,
 };
 
-use rand::Rng;
-use std::cmp::Ordering;
-use std::io;
-
 #[command]
 async fn guess(ctx: &Context, msg: &Message) -> CommandResult {
-    let secret_number = rand::thread_rng().gen_range(1, 101);
+	let secret_number = rand::thread_rng().gen_range(1, 101);
 
-    msg.channel_id.say(&ctx.http, "A game of guess the number is starting!").await?;
-    
-    loop {
-        msg.channel_id.say(&ctx.http, "Please input your guess...").await?;
-        let mut guess = String::new();
+    let _ =  msg.reply(ctx, "Please provide your guess...").await;
 
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
-
-        let guess: u32 = match guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
-
-        match guess.cmp(&secret_number) {
-            Ordering::Less => { msg.channel_id.say(&ctx.http, "Too small!").await?; },
-            Ordering::Greater => { msg.channel_id.say(&ctx.http, "Too big!").await?; },
-            Ordering::Equal => {
-                msg.channel_id.say(&ctx.http, "You win!").await?;
-                break;
-            }
+	if let Some(answer) = &msg.author.await_reply(&ctx).timeout(Duration::from_secs(10)).await {
+        
+		if answer.content.parse::<u32>().unwrap() == secret_number {
+            let _ = answer.reply(ctx, "That's correct!").await;
+        } else {
+			if answer.content.parse::<u32>().unwrap() > secret_number {
+            	let _ = answer.reply(ctx, "Wrong, your guess was too big!").await;
+			} else {
+				let _ = answer.reply(ctx, "Wrong, your guess was too small!").await;
+			}
         }
-    }
+    } else {
+        let _ =  msg.reply(ctx, "No answer within 10 seconds.").await;
+    };
 
     Ok(())
 }

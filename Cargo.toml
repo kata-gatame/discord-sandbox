@@ -14,6 +14,7 @@
 [dependencies.serenity]
     features = [
         "cache",
+        "collector",
         "framework",
         "standard_framework",
         "rustls_backend"

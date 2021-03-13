@@ -5,6 +5,7 @@ use std::{
     env,
     sync::Arc,
 };
+
 use serenity::{
     async_trait,
     client::bridge::gateway::ShardManager,
