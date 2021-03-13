@@ -1,0 +1,5 @@
+# configuration files
+.env
+
+# production files
+/target
