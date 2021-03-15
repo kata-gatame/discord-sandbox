@@ -1,104 +1,61 @@
 mod commands;
+mod handler;
 
-use std::{
-    collections::HashSet,
-    env,
-    sync::Arc,
-};
+use dotenv;
+use std::env;
+use std::collections::HashSet;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use serenity::{
-    async_trait,
     client::bridge::gateway::ShardManager,
-    framework::{
-        StandardFramework,
-        standard::macros::group,
+    framework::standard::{
+        StandardFramework
     },
     http::Http,
-    model::{event::ResumedEvent, gateway::Ready},
     prelude::*,
 };
 
-use tracing_subscriber::{
-    FmtSubscriber,
-    EnvFilter,
-};
-
-use commands::{
-    game::*,
-    owner::*
-};
-
-pub struct ShardManagerContainer;
-
+struct ShardManagerContainer;
 impl TypeMapKey for ShardManagerContainer {
     type Value = Arc<Mutex<ShardManager>>;
 }
-
-struct Handler;
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
-        println!("Connected as {}", ready.user.name);
-    }
-
-    async fn resume(&self, _: Context, _: ResumedEvent) {
-        println!("Resumed");
-    }
-}
-
-#[group]
-#[commands(guess, quit)]
-struct General;
 
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().expect("Failed to load .env file");
 
-    let subscriber = FmtSubscriber::builder()
-        .with_env_filter(EnvFilter::from_default_env())
-        .finish();
-
-    tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
-
-    let token = env::var("DISCORD_TOKEN")
-        .expect("Expected a token in the environment");
-
+    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
     let http = Http::new_with_token(&token);
 
-    let (owners, _bot_id) = match http.get_current_application_info().await {
+    let (owners, _) = match http.get_current_application_info().await {
         Ok(info) => {
             let mut owners = HashSet::new();
             owners.insert(info.owner.id);
 
             (owners, info.id)
-        },
+        }
         Err(why) => panic!("Could not access application info: {:?}", why),
     };
 
     let framework = StandardFramework::new()
         .configure(|c| c
-                   .owners(owners)
-                   .prefix("."))
-        .group(&GENERAL_GROUP);
-
+            .owners(owners)
+            .prefix("."))
+            .group(&commands::groups::owner::OWNER_GROUP)
+			.group(&commands::groups::misc::MISC_GROUP);
+    
     let mut client = Client::builder(&token)
+        .cache_update_timeout(std::time::Duration::from_millis(500))
+        .event_handler(handler::Handler)
         .framework(framework)
-        .event_handler(Handler)
         .await
         .expect("Err creating client");
-
+    
     {
         let mut data = client.data.write().await;
-        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
+        data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
     }
-
-    let shard_manager = client.shard_manager.clone();
-
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.expect("Could not register ctrl+c handler");
-        shard_manager.lock().await.shutdown_all().await;
-    });
 
     if let Err(why) = client.start().await {
         println!("Client error: {:?}", why);

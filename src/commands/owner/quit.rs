@@ -1,14 +1,15 @@
 use crate::ShardManagerContainer;
 use serenity::prelude::*;
-use serenity::model::prelude::*;
-use serenity::framework::standard::{
-    CommandResult,
-    macros::command,
+use serenity::{
+    framework::standard::{macros::command, CommandResult},
+    model::channel::Message,
 };
 
 #[command]
+#[description = "Kill the bot."]
+#[num_args(0)]
 #[owners_only]
-async fn quit(ctx: &Context, msg: &Message) -> CommandResult {
+pub async fn quit(ctx: &Context, msg: &Message) -> CommandResult {
     let data = ctx.data.read().await;
 
     if let Some(manager) = data.get::<ShardManagerContainer>() {
