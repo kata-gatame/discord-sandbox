@@ -9,10 +9,10 @@ pub mod owner {
 
 
 pub mod misc {
-    use crate::commands::misc::ping::*;
+    use crate::commands::misc::{ping::*, stats::*};
     use serenity::framework::standard::macros::group;
 
     #[group]
-    #[commands(ping)]
+    #[commands(ping, stats)]
     pub struct Misc;
 }
