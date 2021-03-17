@@ -16,3 +16,12 @@ pub mod misc {
     #[commands(ping, stats)]
     pub struct Misc;
 }
+
+pub mod nerd {
+    use crate::commands::nerd::apod::*;
+    use serenity::framework::standard::macros::group;
+
+    #[group]
+    #[commands(apod)]
+    pub struct Nerd;
+}

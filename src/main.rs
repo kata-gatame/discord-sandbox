@@ -1,5 +1,6 @@
 mod commands;
 mod handler;
+mod util;
 
 use dotenv;
 use std::env;
@@ -43,7 +44,8 @@ async fn main() {
             .owners(owners)
             .prefix("."))
             .group(&commands::groups::owner::OWNER_GROUP)
-			.group(&commands::groups::misc::MISC_GROUP);
+            .group(&commands::groups::misc::MISC_GROUP)
+            .group(&commands::groups::nerd::NERD_GROUP);
     
     let mut client = Client::builder(&token)
         .cache_update_timeout(std::time::Duration::from_millis(500))

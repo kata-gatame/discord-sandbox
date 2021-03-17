@@ -7,13 +7,24 @@
 [dependencies]
     async-trait = "0.1.9"
     chrono = "0.4"
-	chrono-humanize = "0.1.2"
+    chrono-humanize = "0.1.2"
     dotenv = "0.15.0"
     futures = "0.3"
     rand = "0.8"
-    regex = "1"
+    scraper = "0.12.0"
+    select = "0.6.0-alpha.1"
+    substring = "1.4.0"
     tracing = "0.1"
     tracing-futures = "0.2"
+
+[dependencies.reqwest]
+    version = "0.11"
+    default-features = false
+    features = [
+        "blocking",
+        "json",
+        "stream"
+    ]
 
 [dependencies.serenity]
     version = "0.10.0"
